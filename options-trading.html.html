@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Options Trading Strategies</title>
+  <script src="https://cdn.tailwindcss.com "></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js "></script>
+  <style>
+    .sidebar {
+      transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
+      width: 260px;
+    }
+    .sidebar-collapsed {
+      width: 80px;
+    }
+    .sidebar-hidden {
+      transform: translateX(-100%);
+    }
+    .sidebar-collapsed .sidebar-text {
+      display: none;
+    }
+    .sidebar-collapsed .sidebar-icon {
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .sidebar-item:hover {
+      background-color: #4b5563;
+      transform: translateX(5px);
+      transition: transform 0.2s ease-in-out;
+    }
+    @media (min-width: 768px) {
+      .sidebar-hidden {
+        transform: translateX(0);
+      }
+    }
+    canvas {
+      max-width: 100%;
+      height: 200px !important;
+    }
+    .strategy-card {
+      transition: all 0.3s ease;
+    }
+    .strategy-details {
+      display: none;
+    }
+    .strategy-details.show {
+      display: block;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+<!-- Navbar -->
+<nav class="bg-blue-600 text-white p-4 fixed w-full top-0 z-20 shadow-md">
+  <div class="container mx-auto flex justify-between items-center">
+    <h1 class="text-xl font-bold">Options Trading Guide</h1>
+    <button id="menu-toggle" class="md:hidden focus:outline-none">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+      </svg>
+    </button>
+    <div class="hidden md:flex space-x-4">
+      <a href="#hero" class="hover:text-gray-200">Home</a>
+      <a href="#strategies" class="hover:text-gray-200">Strategies</a>
+      <a href="#notes" class="hover:text-gray-200">Notes</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Sidebar -->
+<aside id="sidebar" class="bg-gray-800 text-white h-full fixed top-0 left-0 mt-16 p-4 z-10 transition-all duration-300 sidebar-collapsed">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-lg font-semibold sidebar-text">Strategy Categories</h2>
+    <button id="sidebar-toggle" class="text-white focus:outline-none">
+      <svg class="w-6 h-6 sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7m0 0l7-7m-7-7h18"></path>
+      </svg>
+    </button>
+  </div>
+  <ul class="space-y-2">
+    <li class="rounded-lg p-2 hover:bg-gray-700 transition-colors duration-200 sidebar-item">
+      <a href="#bullish" class="flex items-center space-x-2 hover:text-blue-300">
+        <svg class="w-5 h-5 sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+        </svg>
+        <span class="sidebar-text">Bullish Strategies</span>
+      </a>
+    </li>
+    <li class="rounded-lg p-2 hover:bg-gray-700 transition-colors duration-200 sidebar-item">
+      <a href="#bearish" class="flex items-center space-x-2 hover:text-blue-300">
+        <svg class="w-5 h-5 sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+        </svg>
+        <span class="sidebar-text">Bearish Strategies</span>
+      </a>
+    </li>
+    <li class="rounded-lg p-2 hover:bg-gray-700 transition-colors duration-200 sidebar-item">
+      <a href="#neutral" class="flex items-center space-x-2 hover:text-blue-300">
+        <svg class="w-5 h-5 sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+        </svg>
+        <span class="sidebar-text">Neutral Strategies</span>
+      </a>
+    </li>
+    <li class="rounded-lg p-2 hover:bg-gray-700 transition-colors duration-200 sidebar-item">
+      <a href="#volatile" class="flex items-center space-x-2 hover:text-blue-300">
+        <svg class="w-5 h-5 sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18m0-18L5 18m14-7l-7 7"></path>
+        </svg>
+        <span class="sidebar-text">Volatile Strategies</span>
+      </a>
+    </li>
+    <li class="rounded-lg p-2 hover:bg-gray-700 transition-colors duration-200 sidebar-item">
+      <a href="#notes" class="flex items-center space-x-2 hover:text-blue-300">
+        <svg class="w-5 h-5 sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        </svg>
+        <span class="sidebar-text">Notes</span>
+      </a>
+    </li>
+  </ul>
+</aside>
+
+<!-- Main Content -->
+<main class="md:ml-64 pt-20 pb-10 transition-all duration-300">
+  <!-- Hero Section -->
+  <section id="hero" class="bg-blue-500 text-white py-20 text-center">
+    <div class="container mx-auto px-4">
+      <h2 class="text-4xl font-bold mb-4">Master Options Trading</h2>
+      <p class="text-lg mb-6">Explore a variety of options trading strategies to suit your market outlook, risk tolerance, and goals.</p>
+      <a href="#strategies" class="bg-white text-blue-600 px-6 py-3 rounded-full font-semibold hover:bg-gray-200 transition-colors duration-300">View Strategies</a>
+    </div>
+  </section>
+
+  <!-- Strategies Section -->
+  <section id="strategies" class="container mx-auto px-4 py-10">
+    <h2 class="text-3xl font-bold mb-6 text-center">Options Trading Strategies</h2>
+    <p class="mb-6 text-center">Examples below use the Nifty 50 spot price of ₹24,813 (as of May 22, 2025). Each includes a payoff chart and detailed explanation. Lot size is 75 for Nifty 50 options.</p>
+    
+    <!-- Bullish Strategies -->
+    <div id="bullish" class="mb-8">
+      <h3 class="text-2xl font-semibold mb-4 text-blue-600">Bullish Strategies (Expecting Price Increase)</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Long Call -->
+        <div class="strategy-card bg-white p-4 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold">Long Call</h4>
+          <p class="text-sm text-gray-600 mb-2">Bullish • Medium Risk</p>
+          <p class="text-sm">Buy a call option to profit from an expected rise in the underlying asset’s price.</p>
+          <canvas id="long-call" class="my-4"></canvas>
+          <button class="view-details text-blue-600 border border-blue-600 px-4 py-2 rounded hover:bg-blue-50">View Details</button>
+          <div class="strategy-details mt-4">
+            <p><strong>Scenario:</strong> Nifty 50 is at ₹24,813. You buy one ATM call option with a strike price of ₹24,800, expiring in one month, for a premium of ₹200 (₹15,000 total).</p>
+            <p><strong>Breakeven:</strong> ₹24,800 + ₹200 = ₹25,000</p>
+            <p><strong>Payoff Calculation:</strong></p>
+            <ul class="list-disc pl-6 mb-4">
+              <li>If Nifty closes at ₹24,500: Option expires worthless. Loss = ₹15,000.</li>
+              <li>If Nifty closes at ₹25,000: Breakeven. Payoff = (₹25,000 - ₹24,800 - ₹200) × 75 = ₹0.</li>
+              <li>If Nifty closes at ₹25,500: Payoff = (₹25,500 - ₹24,800 - ₹200) × 75 = ₹37,500.</li>
+            </ul>
+            <p><strong>Explanation:</strong> The Long Call is ideal when you expect Nifty 50 to rise significantly. Your risk is limited to the premium paid (₹15,000). If Nifty exceeds ₹25,000, profits increase linearly with no upper limit. Time decay (theta) erodes the option’s value as expiration nears, so timing is critical.</p>
+          </div>
+        </div>
+        
+        <!-- Bull Call Spread -->
+        <div class="strategy-card bg-white p-4 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold">Bull Call Spread</h4>
+          <p class="text-sm text-gray-600 mb-2">Bullish • Low Risk</p>
+          <p class="text-sm">Buy a call at a lower strike price and sell a call at a higher strike price.</p>
+          <canvas id="bullCallSpreadChart" class="my-4"></canvas>
+          <button class="view-details text-blue-600 border border-blue-600 px-4 py-2 rounded hover:bg-blue-50">View Details</button>
+          <div class="strategy-details mt-4">
+            <p><strong>Scenario:</strong> Nifty 50 is at ₹24,813. You buy one call at ₹24,800 for ₹200 (₹15,000) and sell one call at ₹25,200 for ₹50 (₹3,750). Net cost = ₹150 × 75 = ₹11,250.</p>
+            <p><strong>Breakeven:</strong> ₹24,800 + ₹150 = ₹24,950</p>
+            <p><strong>Payoff Calculation:</strong></p>
+            <ul class="list-disc pl-6 mb-4">
+              <li>If Nifty closes at ₹24,500: Both options expire worthless. Loss = ₹11,250.</li>
+              <li>If Nifty closes at ₹25,000: Payoff = (₹25,000 - ₹24,800 - ₹150) × 75 = ₹3,750.</li>
+              <li>If Nifty closes at ₹25,500: Payoff = (₹25,200 - ₹24,800 - ₹150) × 75 = ₹18,750.</li>
+            </ul>
+            <p><strong>Explanation:</strong> The Bull Call Spread limits both risk and reward. Maximum loss is the net premium (₹11,250), and maximum profit is capped at ₹18,750 if Nifty exceeds ₹25,200. This strategy reduces the cost of a Long Call but caps upside potential.</p>
+          </div>
+        </div>
+        
+        <!-- Covered Call -->
+        <div class="strategy-card bg-white p-4 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold">Covered Call</h4>
+          <p class="text-sm text-gray-600 mb-2">Bullish • Medium Risk</p>
+          <p class="text-sm">Own the underlying stock and sell a call option to generate income.</p>
+          <canvas id="coveredCallChart" class="my-4"></canvas>
+          <button class="view-details text-blue-600 border border-blue-600 px-4 py-2 rounded hover:bg-blue-50">View Details</button>
+          <div class="strategy-details mt-4">
+            <p><strong>Scenario:</strong> You own 75 shares of Nifty 50 ETF at ₹24,813 and sell one OTM call at ₹25,200 for ₹50 (₹3,750).</p>
+            <p><strong>Breakeven:</strong> ₹24,813 - ₹50 = ₹24,763</p>
+            <p><strong>Payoff Calculation:</strong></p>
+            <ul class="list-disc pl-6 mb-4">
+              <li>If Nifty closes at ₹24,500: Stock value = ₹24,500 × 75 = ₹1,837,500. Loss = ₹1,837,500 - ₹1,861,125 + ₹3,750 = -₹19,875.</li>
+              <li>If Nifty closes at ₹25,200: Stock value = ₹1,890,000. Profit = ₹1,890,000 - ₹1,861,125 + ₹3,750 = ₹32,625.</li>
+              <li>If Nifty closes at ₹25,500: Profit capped at ₹32,625 (same as ₹25,200 due to call assignment).</li>
+            </ul>
+            <p><strong>Explanation:</strong> The Covered Call generates income (₹3,750) but caps upside at ₹25,200. If Nifty falls, you face downside risk on the stock, offset slightly by the premium. Maximum profit is ₹32,625.</p>
+          </div>
+        </div>
+        
+        <!-- Synthetic Long Stock -->
+        <div class="strategy-card bg-white p-4 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold">Synthetic Long Stock</h4>
+          <p class="text-sm text-gray-600 mb-2">Bullish • High Risk</p>
+          <p class="text-sm">Buy a call and sell a put at the same strike to mimic owning the stock.</p>
+          <canvas id="syntheticLongStockChart" class="my-4"></canvas>
+          <button class="view-details text-blue-600 border border-blue-600 px-4 py-2 rounded hover:bg-blue-50">View Details</button>
+          <div class="strategy-details mt-4">
+            <p><strong>Scenario:</strong> Nifty 50 is at ₹24,813. You buy one call at ₹24,800 for ₹200 (₹15,000) and sell one put at ₹24,800 for ₹200 (₹15,000). Net cost = ₹0.</p>
+            <p><strong>Breakeven:</strong> ₹24,800</p>
+            <p><strong>Payoff Calculation:</strong></p>
+            <ul class="list-disc pl-6 mb-4">
+              <li>If Nifty closes at ₹24,500: Put payoff = (₹24,800 - ₹24,500) × 75 = -₹22,500. Loss = -₹22,500.</li>
+              <li>If Nifty closes at ₹24,800: Both options expire worthless. Payoff = ₹0.</li>
+              <li>If Nifty closes at ₹25,500: Call payoff = (₹25,500 - ₹24,800) × 75 = ₹52,500. Profit = ₹52,500.</li>
+            </ul>
+            <p><strong>Explanation:</strong> The Synthetic Long Stock mimics stock ownership without the capital outlay. Upside is unlimited, but downside risk is significant if Nifty falls below ₹24,800. No net cost due to equal premiums.</p>
+          </div>
+        </div>
+        
+        <!-- Cash-Secured Put -->
+        <div class="strategy-card bg-white p-4 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold">Cash-Secured Put</h4>
+          <p class="text-sm text-gray-600 mb-2">Bullish • Medium Risk</p>
+          <p class="text-sm">Sell a put option with cash reserved to buy the stock if assigned.</p>
+          <canvas id="cashSecuredPutChart" class="my-4"></canvas>
+          <button class="view-details text-blue-600 border border-blue-600 px-4 py-2 rounded hover:bg-blue-50">View Details</button>
+          <div class="strategy-details mt-4">
+            <p><strong>Scenario:</strong> Nifty 50 is at ₹24,813. You sell one put at ₹24,800 for ₹200 (₹15,000) with cash reserved to buy at ₹24,800.</p>
+            <p><strong>Breakeven:</strong> ₹24,800 - ₹200 = ₹24,600</p>
+            <p><strong>Payoff Calculation:</strong></p>
+            <ul class="list-disc pl-6 mb-4">
+              <li>If Nifty closes at ₹24,500: Put payoff = (₹24,800 - ₹24,500) × 75 = -₹22,500 + ₹15,000 = -₹7,500.</li>
+              <li>If Nifty closes at ₹24,600: Payoff = (₹24,800 - ₹24,600) × 75 = -₹15,000 + ₹15,000 = ₹0.</li>
+              <li>If Nifty closes at ₹25,000: Put expires worthless. Profit = ₹15,000.</li>
+            </ul>
+            <p><strong>Explanation:</strong> The Cash-Secured Put generates income (₹15,000) if Nifty stays above ₹24,800. If Nifty falls below ₹24,600, you start losing money, with losses increasing as Nifty drops further.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Bearish Strategies -->
+    <div id="bearish" class="mb-8">
+      <h3 class="text-2xl font-semibold mb-4 text-blue-600">Bearish Strategies (Expecting Price Decrease)</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Long Put -->
+        <div class="strategy-card bg-white p-4 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold">Long Put</h4>
+          <p class="text-sm text-gray-600 mb-2">Bearish • Medium Risk</p>
+          <p class="text-sm">Buy a put option to profit from an expected decline in the underlying asset’s price.</p>
+          <canvas id="longPutChart" class="my-4"></canvas>
+          <button class="view-details text-blue-600 border border-blue-600 px-4 py-2 rounded hover:bg-blue-50">View Details</button>
+          <div class="strategy-details mt-4">
+            <p><strong>Scenario:</strong> Nifty 50 is at ₹24,813. You buy one ATM put option with a strike price of ₹24,800, expiring in one month, for a premium of ₹200 (₹15,000 total).</p>
+            <p><strong>Breakeven:</strong> ₹24,800 - ₹200 = ₹24,600</p>
+            <p><strong>Payoff Calculation:</strong></p>
+            <ul class="list-disc pl-6 mb-4">
+              <li>If Nifty closes at ₹25,000: Option expires worthless. Loss = ₹15,000.</li>
+              <li>If Nifty closes at ₹24,600: Breakeven. Payoff = (₹24,800 - ₹24,600 - ₹200) × 75 = ₹0.</li>
+              <li>If Nifty closes at ₹24,000: Payoff = (₹24,800 - ₹24,000 - ₹200) × 75 = ₹45,000.</li>
+            </ul>
+            <p><strong>Explanation:</strong> The Long Put profits when Nifty 50 falls below the breakeven point (₹24,600). Risk is limited to the premium (₹15,000), while the maximum reward is significant but capped if Nifty reaches zero.</p>
+          </div>
+        </div>
+        
+        <!-- Bear Put Spread -->
+        <div class="strategy-card bg-white p-4 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold">Bear Put Spread</h4>
+          <p class="text-sm text-gray-600 mb-2">Bearish • Low Risk</p>
+          <p class="text-sm">Buy a put at a higher strike and sell a put at a lower strike.</p>
+          <canvas id="bearPutSpreadChart" class="my-4"></canvas>
+          <button class="view-details text-blue-600 border border-blue-600 px-4 py-2 rounded hover:bg-blue-50">View Details</button>
+          <div class="strategy-details mt-4">
+            <p><strong>Scenario:</strong> Nifty 50 is at ₹24,813. You buy one put at ₹24,800 for ₹200 (₹15,000) and sell one put at ₹24,400 for ₹50 (₹3,750). Net cost = ₹150 × 75 = ₹11,250.</p>
+            <p><strong>Breakeven:</strong> ₹24,800 - ₹150 = ₹24,650</p>
+            <p><strong>Payoff Calculation:</strong></p>
+            <ul class="list-disc pl-6 mb-4">
+              <li>If Nifty closes at ₹25,000: Both options expire worthless. Loss = ₹11,250.</li>
+              <li>If Nifty closes at ₹24,650: Payoff = (₹24,800 - ₹24,650 - ₹150) × 75 = ₹0.</li>
+              <li>If Nifty closes at ₹24,200: Payoff = (₹24,800 - ₹24,400 - ₹150) × 75 = ₹18,750.</li>
+            </ul>
+            <p><strong>Explanation:</strong> The Bear Put Spread limits both risk and reward. Maximum loss is the net premium (₹11,250), and maximum profit is capped at ₹18,750 if Nifty falls below ₹24,400.</p>
+          </div>
+        </div>
+        
+        <!-- Bear Call Spread -->
+        <div class="strategy-card bg-white p-4 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold">Bear Call Spread</h4>
+          <p class="text-sm text-gray-600 mb-2">Bearish • Low Risk</p>
+          <p class="text-sm">Sell a call at a lower strike and buy a call at a higher strike.</p>
+          <canvas id="bearCallSpreadChart" class="my-4"></canvas>
+          <button class="view-details text-blue-600 border border-blue-600 px-4 py-2 rounded hover:bg-blue-50">View Details</button>
+          <div class="strategy-details mt-4">
+            <p><strong>Scenario:</strong> Nifty 50 is at ₹24,813. You sell one call at ₹24,800 for ₹200 (₹15,000) and buy one call at ₹25,200 for ₹50 (₹3,750). Net credit = ₹150 × 75 = ₹11,250.</p>
+            <p><strong>Breakeven:</strong> ₹24,800 + ₹150 = ₹24,950</p>
+            <p><strong>Payoff Calculation:</strong></p>
+            <ul class="list-disc pl-6 mb-4">
+              <li>If Nifty closes at ₹24,500: Both options expire worthless. Profit = ₹11,250.</li>
+              <li>If Nifty closes at ₹24,950: Payoff = ₹0.</li>
+              <li>If Nifty closes at ₹25,500: Loss = (₹25,200 - ₹24,800 - ₹150) × 75 = -₹18,750.</li>
+            </ul>
+            <p><strong>Explanation:</strong> The Bear Call Spread profits if Nifty stays below ₹24,950. Maximum profit is the net credit (₹11,250), and maximum loss is ₹18,750 if Nifty exceeds ₹25,200.</p>
+          </div>
+        </div>
+        
+        <!-- Synthetic Short Stock -->
+        <div class="strategy-card bg-white p-4 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold">Synthetic Short Stock</h4>
+          <p class="text-sm text-gray-600 mb-2">Bearish • High Risk</p>
+          <p class="text-sm">Buy a put and sell a call at the same strike to mimic shorting the stock.</p>
+          <canvas id="syntheticShortStockChart" class="my-4"></canvas>
+          <button class="view-details text-blue-600 border border-blue-600 px-4 py-2 rounded hover:bg-blue-50">View Details</button>
+          <div class="strategy-details mt-4">
+            <p><strong>Scenario:</strong> Nifty 50 is at ₹24,813. You buy one put at ₹24,800 for ₹200 (₹15,000) and sell one call at ₹24,800 for ₹200 (₹15,000). Net cost = ₹0.</p>
+            <p><strong>Breakeven:</strong> ₹24,800</p>
+            <p><strong>Payoff Calculation:</strong></p>
+            <ul class="list-disc pl-6 mb-4">
+              <li>If Nifty closes at ₹24,500: Put payoff = (₹24,800 - ₹24,500) × 75 = ₹22,500. Profit = ₹22,500.</li>
+              <li>If Nifty closes at ₹24,800: Both options expire worthless. Payoff = ₹0.</li>
+              <li>If Nifty closes at ₹25,500: Call payoff = (₹24,800 - ₹25,500) × 75 = -₹52,500. Loss = -₹52,500.</li>
+            </ul>
+            <p><strong>Explanation:</strong> The Synthetic Short Stock mimics shorting Nifty 50. Downside potential is significant if Nifty falls, but upside risk is unlimited if Nifty rises above ₹24,800.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Neutral Strategies -->
+    <div id="neutral" class="mb-8">
+      <h3 class="text-2xl font-semibold mb-4 text-blue-600">Neutral Strategies (Expecting Little Price Movement)</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Iron Condor -->
+        <div class="strategy-card bg-white p-4 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold">Iron Condor</h4>
+          <p class="text-sm text-gray-600 mb-2">Neutral • Low Risk</p>
+          <p class="text-sm">Sell an out-of-the-money (OTM) call and put, buy a further OTM call and put.</p>
+          <canvas id="ironCondorChart" class="my-4"></canvas>
+          <button class="view-details text-blue-600 border border-blue-600 px-4 py-2 rounded hover:bg-blue-50">View Details</button>
+          <div class="strategy-details mt-4">
+            <p><strong>Scenario:</strong> Nifty 50 is at ₹24,813. You sell one OTM call (strike ₹25,200, premium ₹50), sell one OTM put (strike ₹24,400, premium ₹50), buy one further OTM call (strike ₹25,400, premium ₹30), and buy one further OTM put (strike ₹24,200, premium ₹30). Net credit = ₹40 × 75 = ₹3,000.</p>
+            <p><strong>Breakeven:</strong> Upper: ₹25,200 + ₹40 = ₹25,240; Lower: ₹24,400 - ₹40 = ₹24,360</p>
+            <p><strong>Payoff Calculation:</strong></p>
+            <ul class="list-disc pl-6 mb-4">
+              <li>If Nifty closes at ₹24,800: Within range, keep full credit. Profit = ₹3,000.</li>
+              <li>If Nifty closes at ₹25,300: Loss = (₹25,300 - ₹25,200 - ₹40) × 75 = -₹4,500.</li>
+              <li>If Nifty closes at ₹23,800: Loss = (₹24,400 - ₹23,800 - ₹40) × 75 = -₹45,000 (max loss).</li>
+            </ul>
+            <p><strong>Explanation:</strong> The Iron Condor profits if Nifty stays between ₹24,360 and ₹25,240. Maximum profit is the net credit (₹3,000), and maximum loss is limited to ₹200 × 75 - ₹3,000 = ₹12,000.</p>
+          </div>
+        </div>
+        
+        <!-- Butterfly Spread -->
+        <div class="strategy-card bg-white p-4 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold">Butterfly Spread</h4>
+          <p class="text-sm text-gray-600 mb-2">Neutral • Low Risk</p>
+          <p class="text-sm">Buy one call/put at a lower strike, sell two at a middle strike, buy one at a higher strike.</p>
+          <canvas id="butterflySpreadChart" class="my-4"></canvas>
+          <button class="view-details text-blue-600 border border-blue-600 px-4 py-2 rounded hover:bg-blue-50">View Details</button>
+          <div class="strategy-details mt-4">
+            <p><strong>Scenario:</strong> Nifty 50 is at ₹24,813. You buy one call at ₹24,400 for ₹400 (₹30,000), sell two calls at ₹24,800 for ₹200 each (₹30,000 total), and buy one call at ₹25,200 for ₹50 (₹3,750). Net cost = ₹3,750.</p>
+            <p><strong>Breakeven:</strong> Lower: ₹24,400 + ₹50 = ₹24,450; Upper: ₹25,200 - ₹50 = ₹25,150</p>
+            <p><strong>Payoff Calculation:</strong></p>
+            <ul class="list-disc pl-6 mb-4">
+              <li>If Nifty closes at ₹24,400: Loss = ₹3,750.</li>
+              <li>If Nifty closes at ₹24,800: Profit = (₹24,800 - ₹24,400 - ₹50) × 75 = ₹26,250.</li>
+              <li>If Nifty closes at ₹25,400: Loss = ₹3,750.</li>
+            </ul>
+            <p><strong>Explanation:</strong> The Butterfly Spread profits most if Nifty closes at ₹24,800. Maximum profit is ₹26,250, and maximum loss is the net premium (₹3,750). It’s a low-risk strategy for a specific price target.</p>
+          </div>
+        </div>
+        
+        <!-- Calendar Spread -->
+        <div class="strategy-card bg-white p-4 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold">Calendar Spread</h4>
+          <p class="text-sm text-gray-600 mb-2">Neutral • Medium Risk</p>
+          <p class="text-sm">Sell a short-term option and buy a longer-term option at the same strike.</p>
+          <canvas id="calendarSpreadChart" class="my-4"></canvas>
+          <button class="view-details text-blue-600 border border-blue-600 px-4 py-2 rounded hover:bg-blue-50">View Details</button>
+          <div class="strategy-details mt-4">
+            <p><strong>Scenario:</strong> Nifty 50 is at ₹24,813. You sell one call at ₹24,800 expiring in one month for ₹200 (₹15,000) and buy one call at ₹24,800 expiring in two months for ₹300 (₹22,500). Net cost = ₹100 × 75 = ₹7,500.</p>
+            <p><strong>Breakeven:</strong> Varies based on volatility; approximately ₹24,900 at first expiration.</p>
+            <p><strong>Payoff Calculation:</strong></p>
+            <ul class="list-disc pl-6 mb-4">
+              <li>If Nifty closes at ₹24,800: Short call expires worthless, long call worth ~₹200. Loss = ₹7,500.</li>
+              <li>If Nifty closes at ₹25,000: Short call loss = (₹25,000 - ₹24,800) × 75 = ₹15,000; long call gain ~₹22,500. Net = ₹0.</li>
+              <li>If Nifty closes at ₹24,400: Profit ~₹7,500 (long call retains value).</li>
+            </ul>
+            <p><strong>Explanation:</strong> The Calendar Spread profits from time decay of the short-term option. Maximum loss is the net premium (₹7,500), and profit potential depends on volatility and time decay.</p>
+          </div>
+        </div>
+        
+        <!-- Short Straddle -->
+        <div class="strategy-card bg-white p-4 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold">Straddle (Short)</h4>
+          <p class="text-sm text-gray-600 mb-2">Neutral • High Risk</p>
+          <p class="text-sm">Sell a call and put at the same strike, expecting minimal price movement.</p>
+          <canvas id="shortStraddleChart" class="my-4"></canvas>
+          <button class="view-details text-blue-600 border border-blue-600 px-4 py-2 rounded hover:bg-blue-50">View Details</button>
+          <div class="strategy-details mt-4">
+            <p><strong>Scenario:</strong> Nifty 50 is at ₹24,813. You sell one call at ₹24,800 for ₹200 (₹15,000) and one put at ₹24,800 for ₹200 (₹15,000). Net credit = ₹400 × 75 = ₹30,000.</p>
+            <p><strong>Breakeven:</strong> Upper: ₹24,800 + ₹400 = ₹25,200; Lower: ₹24,800 - ₹400 = ₹24,400</p>
+            <p><strong>Payoff Calculation:</strong></p>
+            <ul class="list-disc pl-6 mb-4">
+              <li>If Nifty closes at ₹24,800: Both options expire worthless. Profit = ₹30,000.</li>
+              <li>If Nifty closes at ₹25,500: Call loss = (₹25,500 - ₹24,800) × 75 = -₹52,500. Net = -₹22,500.</li>
+              <li>If Nifty closes at ₹24,000: Put loss = (₹24,800 - ₹24,000) × 75 = -₹60,000. Net = -₹30,000.</li>
+            </ul>
+            <p><strong>Explanation:</strong> The Short Straddle profits if Nifty stays near ₹24,800. Maximum profit is ₹30,000, but losses are unlimited if Nifty moves significantly in either direction.</p>
+          </div>
+        </div>
+        
+        <!-- Short Strangle -->
+        <div class="strategy-card bg-white p-4 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold">Strangle (Short)</h4>
+          <p class="text-sm text-gray-600 mb-2">Neutral • High Risk</p>
+          <p class="text-sm">Sell an OTM call and OTM put, expecting the stock to stay within a range.</p>
+          <canvas id="shortStrangleChart" class="my-4"></canvas>
+          <button class="view-details text-blue-600 border border-blue-600 px-4 py-2 rounded hover:bg-blue-50">View Details</button>
+          <div class="strategy-details mt-4">
+            <p><strong>Scenario:</strong> Nifty 50 is at ₹24,813. You sell one OTM call at ₹25,200 for ₹50 (₹3,750) and one OTM put at ₹24,400 for ₹50 (₹3,750). Net credit = ₹100 × 75 = ₹7,500.</p>
+            <p><strong>Breakeven:</strong> Upper: ₹25,200 + ₹100 = ₹25,300; Lower: ₹24,400 - ₹100 = ₹24,300</p>
+            <p><strong>Payoff Calculation:</strong></p>
+            <ul class="list-disc pl-6 mb-4">
+              <li>If Nifty closes at ₹24,800: Both options expire worthless. Profit = ₹7,500.</li>
+              <li>If Nifty closes at ₹25,500: Call loss = (₹25,500 - ₹25,200) × 75 = -₹22,500. Net = -₹15,000.</li>
+              <li>If Nifty closes at ₹24,000: Put loss = (₹24,400 - ₹24,000) × 75 = -₹30,000. Net = -₹22,500.</li>
+            </ul>
+            <p><strong>Explanation:</strong> The Short Strangle profits if Nifty stays between ₹24,300 and ₹25,300. Maximum profit is ₹7,500, but losses are unlimited if Nifty moves significantly.</p>
+          </div>
+        </div>
+        
+        <!-- Iron Butterfly -->
+        <div class="strategy-card bg-white p-4 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold">Iron Butterfly</h4>
+          <p class="text-sm text-gray-600 mb-2">Neutral • Low Risk</p>
+          <p class="text-sm">Sell an at-the-money (ATM) call and put, buy an OTM call and put.</p>
+          <canvas id="ironButterflyChart" class="my-4"></canvas>
+          <button class="view-details text-blue-600 border border-blue-600 px-4 py-2 rounded hover:bg-blue-50">View Details</button>
+          <div class="strategy-details mt-4">
+            <p><strong>Scenario:</strong> Nifty 50 is at ₹24,813. You sell one ATM call at ₹24,800 for ₹200 (₹15,000), sell one ATM put at ₹24,800 for ₹200 (₹15,000), buy one OTM call at ₹25,200 for ₹50 (₹3,750), and buy one OTM put at ₹24,400 for ₹50 (₹3,750). Net credit = ₹300 × 75 = ₹22,500.</p>
+            <p><strong>Breakeven:</strong> Upper: ₹24,800 + ₹300 = ₹25,100; Lower: ₹24,800 - ₹300 = ₹24,500</p>
+            <p><strong>Payoff Calculation:</strong></p>
+            <ul class="list-disc pl-6 mb-4">
+              <li>If Nifty closes at ₹24,800: Both sold options expire worthless. Profit = ₹22,500.</li>
+              <li>If Nifty closes at ₹25,300: Loss = (₹25,200 - ₹24,800 - ₹300) × 75 = -₹7,500.</li>
+              <li>If Nifty closes at ₹24,200: Loss = (₹24,800 - ₹24,400 - ₹300) × 75 = -₹7,500.</li>
+            </ul>
+            <p><strong>Explanation:</strong> The Iron Butterfly profits if Nifty stays near ₹24,800. Maximum profit is ₹22,500, and maximum loss is ₹7,500 if Nifty moves beyond ₹24,400 or ₹25,200.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Volatile Strategies -->
+    <div id="volatile" class="mb-8">
+      <h3 class="text-2xl font-semibold mb-4 text-blue-600">Volatile Strategies (Expecting Large Price Movement)</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Long Straddle -->
+        <div class="strategy-card bg-white p-4 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold">Long Straddle</h4>
+          <p class="text-sm text-gray-600 mb-2">Volatile • Medium Risk</p>
+          <p class="text-sm">Buy a call and put at the same strike, expecting a significant price move in either direction.</p>
+          <canvas id="longStraddleChart" class="my-4"></canvas>
+          <button class="view-details text-blue-600 border border-blue-600 px-4 py-2 rounded hover:bg-blue-50">View Details</button>
+          <div class="strategy-details mt-4">
+            <p><strong>Scenario:</strong> Nifty 50 is at ₹24,813. You buy one ATM call at ₹24,800 for ₹200 (₹15,000) and one ATM put at ₹24,800 for ₹200 (₹15,000). Total cost = ₹400 × 75 = ₹30,000.</p>
+            <p><strong>Breakeven:</strong> Upper: ₹24,800 + ₹400 = ₹25,200; Lower: ₹24,800 - ₹400 = ₹24,400</p>
+            <p><strong>Payoff Calculation:</strong></p>
+            <ul class="list-disc pl-6 mb-4">
+              <li>If Nifty closes at ₹24,800: Both options expire worthless. Loss = ₹30,000.</li>
+              <li>If Nifty closes at ₹25,500: Call payoff = (₹25,500 - ₹24,800 - ₹400) × 75 = ₹22,500. Net profit = ₹22,500 - ₹15,000 = ₹7,500.</li>
+              <li>If Nifty closes at ₹24,000: Put payoff = (₹24,800 - ₹24,000 - ₹400) × 75 = ₹30,000. Net profit = ₹15,000.</li>
+            </ul>
+            <p><strong>Explanation:</strong> The Long Straddle profits from large price movements in either direction. Risk is limited to the premiums paid (₹30,000). The call side offers unlimited upside, while the put side’s reward is significant but limited if Nifty reaches zero.</p>
+          </div>
+        </div>
+        
+        <!-- Long Strangle -->
+        <div class="strategy-card bg-white p-4 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold">Long Strangle</h4>
+          <p class="text-sm text-gray-600 mb-2">Volatile • Medium Risk</p>
+          <p class="text-sm">Buy an OTM call and OTM put, expecting a large price swing.</p>
+          <canvas id="longStrangleChart" class="my-4"></canvas>
+          <button class="view-details text-blue-600 border border-blue-600 px-4 py-2 rounded hover:bg-blue-50">View Details</button>
+          <div class="strategy-details mt-4">
+            <p><strong>Scenario:</strong> Nifty 50 is at ₹24,813. You buy one OTM call at ₹25,200 for ₹50 (₹3,750) and one OTM put at ₹24,400 for ₹50 (₹3,750). Total cost = ₹100 × 75 = ₹7,500.</p>
+            <p><strong>Breakeven:</strong> Upper: ₹25,200 + ₹100 = ₹25,300; Lower: ₹24,400 - ₹100 = ₹24,300</p>
+            <p><strong>Payoff Calculation:</strong></p>
+            <ul class="list-disc pl-6 mb-4">
+              <li>If Nifty closes at ₹24,800: Both options expire worthless. Loss = ₹7,500.</li>
+              <li>If Nifty closes at ₹25,500: Call payoff = (₹25,500 - ₹25,200 - ₹100) × 75 = ₹15,000. Net profit = ₹15,000 - ₹3,750 = ₹11,250.</li>
+              <li>If Nifty closes at ₹24,000: Put payoff = (₹24,400 - ₹24,000 - ₹100) × 75 = ₹22,500. Net profit = ₹18,750.</li>
+            </ul>
+            <p><strong>Explanation:</strong> The Long Strangle is cheaper than a Long Straddle but requires a larger price move to profit. Risk is limited to ₹7,500, with unlimited upside on the call side and significant downside on the put side.</p>
+          </div>
+        </div>
+        
+        <!-- Reverse Iron Condor -->
+        <div class="strategy-card bg-white p-4 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold">Reverse Iron Condor</h4>
+          <p class="text-sm text-gray-600 mb-2">Volatile • Low Risk</p>
+          <p class="text-sm">Buy an OTM call and put, sell a further OTM call and put, expecting a big move.</p>
+          <canvas id="reverseIronCondorChart" class="my-4"></canvas>
+          <button class="view-details text-blue-600 border border-blue-600 px-4 py-2 rounded hover:bg-blue-50">View Details</button>
+          <div class="strategy-details mt-4">
+            <p><strong>Scenario:</strong> Nifty 50 is at ₹24,813. You buy one OTM call at ₹25,200 for ₹50 (₹3,750), buy one OTM put at ₹24,400 for ₹50 (₹3,750), sell one further OTM call at ₹25,400 for ₹30 (₹2,250), and sell one further OTM put at ₹24,200 for ₹30 (₹2,250). Net cost = ₹40 × 75 = ₹3,000.</p>
+            <p><strong>Breakeven:</strong> Upper: ₹25,200 + ₹40 = ₹25,240; Lower: ₹24,400 - ₹40 = ₹24,360</p>
+            <p><strong>Payoff Calculation:</strong></p>
+            <ul class="list-disc pl-6 mb-4">
+              <li>If Nifty closes at ₹24,800: Loss = ₹3,000.</li>
+              <li>If Nifty closes at ₹25,300: Profit = (₹25,400 - ₹25,200 - ₹40) × 75 = ₹12,000.</li>
+              <li>If Nifty closes at ₹24,000: Profit = (₹24,400 - ₹24,200 - ₹40) × 75 = ₹12,000.</li>
+            </ul>
+            <p><strong>Explanation:</strong> The Reverse Iron Condor profits from a large price move. Maximum profit is ₹12,000, and maximum loss is ₹3,000 if Nifty stays between ₹24,400 and ₹25,200.</p>
+          </div>
+        </div>
+        
+        <!-- Ratio Spread -->
+        <div class="strategy-card bg-white p-4 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold">Ratio Spread</h4>
+          <p class="text-sm text-gray-600 mb-2">Volatile • High Risk</p>
+          <p class="text-sm">Buy one option and sell multiple options at a different strike (e.g., buy 1 call, sell 2 calls).</p>
+          <canvas id="ratioSpreadChart" class="my-4"></canvas>
+          <button class="view-details text-blue-600 border border-blue-600 px-4 py-2 rounded hover:bg-blue-50">View Details</button>
+          <div class="strategy-details mt-4">
+            <p><strong>Scenario:</strong> Nifty 50 is at ₹24,813. You buy one call at ₹24,800 for ₹200 (₹15,000) and sell two calls at ₹25,200 for ₹50 each (₹7,500 total). Net cost = ₹5,000.</p>
+            <p><strong>Breakeven:</strong> ₹25,600 (complex due to ratio)</p>
+            <p><strong>Payoff Calculation:</strong></p>
+            <ul class="list-disc pl-6 mb-4">
+              <li>If Nifty closes at ₹24,500: Loss = ₹5,000.</li>
+              <li>If Nifty closes at ₹25,200: Profit = (₹25,200 - ₹24,800) × 75 - ₹5,000 = ₹25,000.</li>
+              <li>If Nifty closes at ₹25,500: Loss = (₹25,200 - ₹24,800) × 75 - 2 × (₹25,500 - ₹25,200) × 75 - ₹5,000 = -₹2,500.</li>
+            </ul>
+            <p><strong>Explanation:</strong> The Ratio Spread profits if Nifty rises to ₹25,200 but can lead to unlimited losses if Nifty rises too far due to the extra short call. Maximum profit is ₹25,000, and risk increases above ₹25,600.</p>
+          </div>
+        </div>
+        
+        <!-- Backspread -->
+        <div class="strategy-card bg-white p-4 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold">Backspread</h4>
+          <p class="text-sm text-gray-600 mb-2">Volatile • Medium Risk</p>
+          <p class="text-sm">Sell one option and buy multiple options at a different strike (e.g., sell 1 call, buy 2 calls).</p>
+          <canvas id="backspreadChart" class="my-4"></canvas>
+          <button class="view-details text-blue-600 border border-blue-600 px-4 py-2 rounded hover:bg-blue-50">View Details</button>
+          <div class="strategy-details mt-4">
+            <p><strong>Scenario:</strong> Nifty 50 is at ₹24,813. You sell one call at ₹24,800 for ₹200 (₹15,000) and buy two calls at ₹25,200 for ₹50 each (₹7,500 total). Net credit = ₹5,000.</p>
+            <p><strong>Breakeven:</strong> ₹25,600 (complex due to ratio)</p>
+            <p><strong>Payoff Calculation:</strong></p>
+            <ul class="list-disc pl-6 mb-4">
+              <li>If Nifty closes at ₹24,500: Profit = ₹5,000.</li>
+              <li>If Nifty closes at ₹25,200: Loss = (₹25,200 - ₹24,800) × 75 - ₹5,000 = -₹25,000.</li>
+              <li>If Nifty closes at ₹25,500: Profit = 2 × (₹25,500 - ₹25,200) × 75 - (₹25,500 - ₹24,800) × 75 + ₹5,000 = ₹2,500.</li>
+            </ul>
+            <p><strong>Explanation:</strong> The Backspread profits from a large upward move, with unlimited potential above ₹25,600. Maximum loss is ₹25,000 if Nifty closes at ₹25,200, but risk is limited on the downside.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Notes Section -->
+    <div id="notes" class="mb-8">
+      <h3 class="text-2xl font-semibold mb-4 text-blue-600">Notes</h3>
+      <ul class="list-disc pl-6 space-y-2">
+        <li><strong>Risk Management:</strong> Always assess risk tolerance and use stop-loss or hedging techniques where applicable.</li>
+        <li><strong>Commissions and Fees:</strong> Multiple-leg strategies (e.g., iron condor) may incur higher transaction costs.</li>
+        <li><strong>Margin Requirements:</strong> Strategies like short straddles or synthetic positions may require significant margin.</li>
+        <li><strong>Market Conditions:</strong> Choose strategies based on volatility, time to expiration, and market trends.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<!-- Footer -->
+<footer class="bg-gray-800 text-white py-6">
+  <div class="container mx-auto px-4 text-center">
+    <p>© 2025 Options Trading Guide. All rights reserved.</p>
+    <p class="mt-2">Consult a financial advisor before trading options. Trading carries significant risk.</p>
+  </div>
+</footer>
+
+<script>
+// Toggle sidebar on mobile
+const menuToggle = document.getElementById('menu-toggle');
+const sidebar = document.getElementById('sidebar');
+menuToggle.addEventListener('click', () => {
+  sidebar.classList.toggle('sidebar-hidden');
+});
+
+// Toggle sidebar collapse
+const sidebarToggle = document.getElementById('sidebar-toggle');
+sidebarToggle.addEventListener('click', () => {
+  sidebar.classList.toggle('sidebar-collapsed');
+  const main = document.querySelector('main');
+  if (sidebar.classList.contains('sidebar-collapsed')) {
+    main.classList.remove('md:ml-64');
+    main.classList.add('md:ml-20');
+  } else {
+    main.classList.remove('md:ml-20');
+    main.classList.add('md:ml-64');
+  }
+});
+
+// Toggle strategy details
+document.querySelectorAll('.view-details').forEach(button => {
+  button.addEventListener('click', () => {
+    const details = button.nextElementSibling;
+    details.classList.toggle('show');
+  });
+});
+
+// Smooth scrolling for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    e.preventDefault();
+    document.querySelector(this.getAttribute('href')).scrollIntoView({
+      behavior: 'smooth'
+    });
+    if (window.innerWidth < 768) {
+      sidebar.classList.add('sidebar-hidden');
+    }
+  });
+});
+
+// Chart Configuration
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false } },
+  scales: {
+    x: { display: false },
+    y: { display: false }
+  },
+  elements: {
+    line: { borderColor: 'green', borderWidth: 2 },
+    point: { radius: 0 }
+  }
+};
+
+// Create charts
+new Chart(document.getElementById('long-call'), {
+  type: 'line',
+  data: {
+    labels: [24000, 24500, 24800, 25000, 25500, 26000],
+    datasets: [{ 
+      data: [-15000, -15000, -15000, 0, 37500, 75000], 
+      borderColor: 'green',
+      borderWidth: 2
+    }]
+  },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('bullCallSpreadChart'), {
+  type: 'line',
+  data: {
+    labels: [24000, 24500, 24800, 24950, 25200, 25500],
+    datasets: [{ 
+      data: [-11250, -11250, -11250, 0, 18750, 18750], 
+      borderColor: 'green',
+      borderWidth: 2
+    }]
+  },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('coveredCallChart'), {
+  type: 'line',
+  data: {
+    labels: [24000, 24500, 24813, 25200, 25500],
+    datasets: [{ 
+      data: [-23625, -19875, 0, 32625, 32625], 
+      borderColor: 'green',
+      borderWidth: 2
+    }]
+  },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('syntheticLongStockChart'), {
+  type: 'line',
+  data: {
+    labels: [24000, 24500, 24800, 25200, 25500],
+    datasets: [{ 
+      data: [-22500, -15000, 0, 30000, 52500], 
+      borderColor: 'green',
+      borderWidth: 2
+    }]
+  },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('cashSecuredPutChart'), {
+  type: 'line',
+  data: {
+    labels: [24000, 24600, 24800, 25200],
+    datasets: [{ 
+      data: [-15000, 0, 15000, 15000], 
+      borderColor: 'green',
+      borderWidth: 2
+    }]
+  },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('longPutChart'), {
+  type: 'line',
+  data: {
+    labels: [24000, 24600, 24800, 25000, 25500],
+    datasets: [{ 
+      data: [45000, 0, -15000, -15000, -15000], 
+      borderColor: 'green',
+      borderWidth: 2
+    }]
+  },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('bearPutSpreadChart'), {
+  type: 'line',
+  data: {
+    labels: [24000, 24400, 24650, 24800, 25000],
+    datasets: [{ 
+      data: [18750, 18750, 0, -11250, -11250], 
+      borderColor: 'green',
+      borderWidth: 2
+    }]
+  },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('bearCallSpreadChart'), {
+  type: 'line',
+  data: {
+    labels: [24000, 24500, 24950, 25200, 25500],
+    datasets: [{ 
+      data: [11250, 11250, 0, -18750, -18750], 
+      borderColor: 'green',
+      borderWidth: 2
+    }]
+  },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('syntheticShortStockChart'), {
+  type: 'line',
+  data: {
+    labels: [24000, 24500, 24800, 25200, 25500],
+    datasets: [{ 
+      data: [22500, 15000, 0, -30000, -52500], 
+      borderColor: 'green',
+      borderWidth: 2
+    }]
+  },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('ironCondorChart'), {
+  type: 'line',
+  data: {
+    labels: [23800, 24360, 24800, 25240, 25400],
+    datasets: [{ 
+      data: [-12000, 3000, 3000, 3000, -6000], 
+      borderColor: 'green',
+      borderWidth: 2
+    }]
+  },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('butterflySpreadChart'), {
+  type: 'line',
+  data: {
+    labels: [24000, 24450, 24800, 25150, 25400],
+    datasets: [{ 
+      data: [-3750, -3750, 26250, -3750, -3750], 
+      borderColor: 'green',
+      borderWidth: 2
+    }]
+  },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('calendarSpreadChart'), {
+  type: 'line',
+  data: {
+    labels: [24000, 24400, 24800, 25200, 25600],
+    datasets: [{ 
+      data: [7500, 3750, -7500, 0, 7500], 
+      borderColor: 'green',
+      borderWidth: 2
+    }]
+  },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('shortStraddleChart'), {
+  type: 'line',
+  data: {
+    labels: [23800, 24400, 24800, 25200, 25500],
+    datasets: [{ 
+      data: [-30000, 0, 30000, 0, -22500], 
+      borderColor: 'green',
+      borderWidth: 2
+    }]
+  },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('shortStrangleChart'), {
+  type: 'line',
+  data: {
+    labels: [23800, 24300, 24800, 25300, 25500],
+    datasets: [{ 
+      data: [-22500, 7500, 7500, -7500, -22500], 
+      borderColor: 'green',
+      borderWidth: 2
+    }]
+  },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('ironButterflyChart'), {
+  type: 'line',
+  data: {
+    labels: [24000, 24500, 24800, 25100, 25300],
+    datasets: [{ 
+      data: [-7500, 22500, 22500, 0, -7500], 
+      borderColor: 'green',
+      borderWidth: 2
+    }]
+  },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('longStraddleChart'), {
+  type: 'line',
+  data: {
+    labels: [23800, 24400, 24800, 25200, 25500],
+    datasets: [{ 
+      data: [15000, -30000, -30000, -30000, 7500], 
+      borderColor: 'green',
+      borderWidth: 2
+    }]
+  },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('longStrangleChart'), {
+  type: 'line',
+  data: {
+    labels: [23800, 24300, 24800, 25300, 25500],
+    datasets: [{ 
+      data: [18750, -7500, -7500, 7500, 18750], 
+      borderColor: 'green',
+      borderWidth: 2
+    }]
+  },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('reverseIronCondorChart'), {
+  type: 'line',
+  data: {
+    labels: [23800, 24360, 24800, 25240, 25400],
+    datasets: [{ 
+      data: [12000, -3000, -3000, -3000, 12000], 
+      borderColor: 'green',
+      borderWidth: 2
+    }]
+  },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('ratioSpreadChart'), {
+  type: 'line',
+  data: {
+    labels: [24000, 24500, 24800, 25200, 25500, 25600],
+    datasets: [{ 
+      data: [-5000, -5000, -5000, 25000, 2500, -25000], 
+      borderColor: 'green',
+      borderWidth: 2
+    }]
+  },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('backspreadChart'), {
+  type: 'line',
+  data: {
+    labels: [24000, 24500, 24800, 25200, 25500, 25600],
+    datasets: [{ 
+      data: [5000, 5000, 5000, -25000, -2500, 25000], 
+      borderColor: 'green',
+      borderWidth: 2
+    }]
+  },
+  options: chartOptions
+});
+</script>
+</body>
+</html>
